@@ -6,6 +6,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { db } from './database.js';
 import { buildRecommendations } from './aiService.js';
+import { seedDemo } from './seed.js';
 
 const app=express();
 const allowedOrigins=(process.env.CLIENT_ORIGIN||'').split(',').map(origin=>origin.trim()).filter(Boolean);
@@ -51,4 +52,5 @@ app.get('/api/health',(_req,res)=>res.json({ok:true}));
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 app.use(express.static(path.join(root,'dist')));
 app.use((req,res,next)=>{if(req.method==='GET'&&!req.path.startsWith('/api/')&&req.accepts('html'))return res.sendFile(path.join(root,'dist','index.html'),err=>err&&next());next();});
+if(process.env.SEED_DEMO==='true')await seedDemo();
 const port=process.env.PORT||3001;app.listen(port,()=>console.log(`StockPilot listening at http://localhost:${port}`));

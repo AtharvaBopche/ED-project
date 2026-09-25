@@ -1,7 +1,9 @@
 import bcrypt from 'bcryptjs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { db } from './database.js';
 
-const run = async () => {
+export const seedDemo = async () => {
   const email='demo@stockpilot.local';
   if(db.prepare('SELECT id FROM users WHERE email=?').get(email)){console.log('Demo account already exists.');return;}
   const result=db.prepare("INSERT INTO businesses(name,email,address,phone,currency,trial_end) VALUES(?,?,?,?,?,datetime('now','+60 days'))").run('Northstar Supply Co.','hello@northstar.example','Indiranagar, Bengaluru','+91 80 5555 0100','INR');
@@ -26,4 +28,7 @@ const run = async () => {
   db.prepare('INSERT INTO purchases(business_id,supplier_id,total,invoice_number,payment_status,created_at) VALUES(?,?,?,?,?,datetime(\'now\',\'-3 days\'))').run(businessId,supplier,3490,'WH-1042','Paid');
   console.log('Demo data created. Login: demo@stockpilot.local / StockPilotDemo!');
 };
-run().catch(e=>{console.error(e);process.exitCode=1;});
+
+if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  seedDemo().catch(e=>{console.error(e);process.exitCode=1;});
+}
