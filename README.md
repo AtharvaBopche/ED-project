@@ -19,7 +19,7 @@ The recommendation engine uses transparent rules. It is not a generative AI mode
 
 The Express API listens on port 3001. Vite forwards `/api` requests to it. The SQLite database is created at `data/stockpilot.sqlite` when the API starts.
 
-To create sample data, run `npm run seed`. Demo login:
+To create sample data locally, run `pnpm seed`. Demo login:
 
 - Email: `demo@stockpilot.local`
 - Password: `StockPilotDemo!`
@@ -28,19 +28,18 @@ Sample seeding is optional. You can also register a new business from the landin
 
 ## Production build
 
-- `npm run build` creates the frontend bundle in `dist/`.
-- `npm start` serves the production frontend and API from port 3001 after a build.
-- For local development, use `npm run dev` so Vite serves the frontend and proxies API requests.
+- `pnpm build` creates the frontend bundle in `dist/`.
+- `pnpm start` serves the production frontend and API from port 3001 after a build.
+- For local development, use `pnpm dev` so Vite serves the frontend and proxies API requests.
 
-## Deploy with Vercel and Render
+## Deploy on Render
 
-The frontend is deployed to Vercel and the Express API to Render. Set each project's root directory to this `stockpilot` folder (or `outputs/stockpilot` if your repository includes its parent folder). The included `vercel.json` configures pnpm installation, the Vite build, and `dist` output.
+Render can serve both the frontend and Express API from one web service. The included `vercel.json` is optional if you are only deploying on Render.
 
-1. Push this folder to a GitHub repository.
-2. On Render, create a **Web Service** from that repository. Set its root directory to this folder, build command to `pnpm install --frozen-lockfile`, and start command to `pnpm start`. Add `JWT_SECRET` using Render's generated secret option. Set `DB_PATH` to `/var/data/stockpilot.sqlite` and attach a persistent disk mounted at `/var/data`. Render free web services have ephemeral filesystems, so SQLite records can be lost on restart without a persistent disk.
-3. After Render deploys, copy its service URL. Set Render's `CLIENT_ORIGIN` to the Vercel site URL after Vercel deploys.
-4. On Vercel, import the same repository and set the project root directory to this folder. Add `VITE_API_URL` with the Render service URL (no trailing slash), then deploy or redeploy.
-5. Set Render's `CLIENT_ORIGIN` to the final Vercel production URL and redeploy Render. Register a new business account on the live site; local demo data is not automatically deployed.
+1. Create a Render **Web Service** from the GitHub repository. Set the build command to `pnpm install --frozen-lockfile && pnpm build` and the start command to `pnpm start`.
+2. Set `NODE_ENV=production` and add a private random `JWT_SECRET` in Render's environment settings.
+3. To automatically create demo data on a fresh database, set `SEED_DEMO=true`. The seed runs only if `demo@stockpilot.local` does not already exist. Sign in with `StockPilotDemo!` as its password.
+4. For persistent SQLite records, set `DB_PATH=/var/data/stockpilot.sqlite` and attach a persistent disk mounted at `/var/data`. Render free web services have ephemeral filesystems, so data can be lost on restart without a disk.
 
 Use persistent storage before entering real business records. This SQLite prototype is not intended for multi-instance scaling or production-critical financial records.
 
